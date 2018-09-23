@@ -1,0 +1,159 @@
+---------------------------------------------------------
+Description: >
+    This stack deploys a alarm-announce-api task definition
+
+Parameters:
+  EnvironmentName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+    Default: dev-with-w-alm
+    AllowedValues:
+      - "dev-with-w-alm"
+      - "with-w-alm"
+
+  AppName:
+    Description: TODO
+    Type: String
+    Default: alarm-announce
+
+  ContainerImageAlarmAnnounce:
+    Description: Container Image
+    Type: String
+    Default: 477493424245.dkr.ecr.ap-northeast-1.amazonaws.com/test-p0308-wwaa:latest
+#    Default: test-p0308:latest
+
+  Region:
+    Description: Region
+    Type: String
+    Default: ap-northeast-1
+
+#  TaskName:
+#    Description: A task name
+#    Type: String
+#    Default: dev-with-w-alm-alarm-announce-api-task:9 # TODO
+
+Resources:
+  # ECSコンテナ用セキュリティグループ
+  ContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcId
+      GroupDescription: Security Group for Task
+      SecurityGroupIngress:
+        -
+          CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+        -
+          CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-ContainerSecurityGroup
+
+  ECSCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub ${EnvironmentName}-cluster
+
+  EcsTaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${EnvironmentName}-EcsTaskRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "ecs-tasks.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        -
+          PolicyName: "root"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow" # S3ログ保存
+                Action: "s3:*"
+                Resource: "*"
+              -
+                Effect: "Allow" # SNSアクセス
+                Action: "sns:*"
+                Resource: "*"
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/ecs/logs/${EnvironmentName}-${AppName}-service'
+
+  ECSTask:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Cpu: 256
+      ExecutionRoleArn: !Join ["", [ "arn:aws:iam::", !Ref "AWS::AccountId", !Sub ":role/${EnvironmentName}-EcsTaskRole" ] ]
+      Family: !Sub ${EnvironmentName}-${AppName}-task
+      Memory: 1024
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !Join ["", [ "arn:aws:iam::", !Ref "AWS::AccountId", !Sub ":role/${EnvironmentName}-EcsTaskRole" ] ]
+#      Volumes:
+      ContainerDefinitions:
+        -
+          Name: !Sub ${EnvironmentName}-container-80
+#          Image: !Ref ContainerImageAlarmAnnounce # TODO
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRName}:${ImageTag}"
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref Region
+              awslogs-stream-prefix: ecs
+          MemoryReservation: 512
+          PortMappings:
+            -
+              HostPort: 80
+              Protocol: tcp
+              ContainerPort: 80
+          EntryPoint:
+            - "sh"
+            - "/entrypoint.sh"
+          Command:
+            - "/usr/bin/supervisord"
+          Environment:
+            - Name: LISTEN_PORT
+              Value: 80
+            - Name: ES_ENDPOINT
+              Value: vpc-dev.ap-northeast-1.es.amazonaws.com
+#              Value: {"Fn::ImportValue": !Sub "${EnvironmentName}-EsEndpoint"}
+            - Name: ALB_ENDPOINT
+              Value: internal-dev.ap-northeast-1.elb.amazonaws.com
+#              Value: {"Fn::ImportValue": !Sub "${EnvironmentName}-ALB-Url"}
+
+  Service:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster: !Sub ${EnvironmentName}-cluster
+      DesiredCount: 1
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED # when in public-subnet, need ENABLED to get a container image from ECR on internet
+          SecurityGroups:
+            - !Ref ContainerSecurityGroup
+          Subnets: !Ref PrivateSubnets
+      ServiceName: !Sub ${EnvironmentName}-${AppName}-service
+      TaskDefinition: !Ref ECSTask
+#      TaskDefinition: !Sub ${EnvironmentName}-${AppName}-task
+
+

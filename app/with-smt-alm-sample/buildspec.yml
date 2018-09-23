@@ -1,0 +1,30 @@
+version: 0.2
+
+env:
+  variables:
+    app_path: "app/with-smt-alm-sample"
+
+phases:
+  install:
+    commands:
+      - |
+        pip install -U pip
+  pre_build:
+    commands:
+      - |
+        aws configure set default.region $AWS_REGION
+  build:
+    commands:
+      - |
+        [ -d .cfn ] || mkdir .cfn
+        cp -rp params/* .cfn
+        aws cloudformation package \
+          --template-file ecs_service_cfn.yaml \
+          --s3-bucket $S3_BUCKET \
+          --output-template-file .cfn/packaged.yml
+        ls -la .cfn/packaged.yml
+
+artifacts:
+  files:
+    - ${app_path}/.cfn/*
+  discard-paths: yes
