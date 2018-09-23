@@ -15,7 +15,7 @@ Parameters:
     Default: kazumi-ohbayashi
   Repo:
     Type: String
-    Default: lambda2-cd-ci
+    Default: ecs-cd-ci
   Email:
     Type: String
     Default: kazumi.ohbayashi@nextor.jp
@@ -27,14 +27,13 @@ Parameters:
     Default: app/with-smt-alm-sample/params/param.dev.json
   StackConfigProd:
     Type: String
-    Default: param.prod.json
+    Default: app/with-smt-alm-sample/params/param.prod.json
   TemplateFilePath:
     Type: String
     Default: packaged.yml
   OAuthToken:
     Type: String
     NoEcho: true
-    Default: TODO
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -148,7 +147,7 @@ Resources:
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub ${AppName}
+      Name: !Sub "${AppName}-CFn"
       ServiceRole: !GetAtt CodeBuildRole.Arn
       Artifacts:
         Type: CODEPIPELINE
@@ -168,7 +167,7 @@ Resources:
   CodeBuildProjectEcs:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub ${AppName}
+      Name: !Sub "${AppName}-Ecs"
       ServiceRole: !GetAtt CodeBuildRole.Arn
       Artifacts:
         Type: CODEPIPELINE
@@ -222,6 +221,12 @@ Resources:
 #                Resource:
 #                  - !Sub arn:aws:s3:::${ArtifactStoreBucket}
 #                  - !Sub arn:aws:s3:::${ArtifactStoreBucket}/*
+              - Sid: S3FullAccess
+                Effect: Allow
+                Action: s3:*
+                Resource:
+                  - !Sub arn:aws:s3:::${CodeBuildBucket}
+                  - !Sub arn:aws:s3:::${CodeBuildBucket}/*
               - Sid: FullAccess
                 Effect: Allow
                 Action:

@@ -17,9 +17,9 @@ phases:
     commands:
       - |
         [ -d .cfn ] || mkdir .cfn
-        cp -rp params/* .cfn
+        cp -rp ${app_path}/params/* .cfn
         aws cloudformation package \
-          --template-file ecs_service_cfn.yaml \
+          --template-file ${app_path}/ecs_service_cfn.yaml \
           --s3-bucket $S3_BUCKET \
           --output-template-file .cfn/packaged.yml
         ls -la .cfn/packaged.yml
