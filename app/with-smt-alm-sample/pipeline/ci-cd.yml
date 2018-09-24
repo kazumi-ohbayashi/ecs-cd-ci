@@ -78,8 +78,8 @@ Resources:
     Type: AWS::ECR::Repository
     Properties: 
       RepositoryName: !Ref AppName
-#      LifecyclePolicy:
-#        LifecyclePolicy
+#      LifecyclePolicy: # TODO
+#        LifecyclePolicy # TODO
 #      RepositoryPolicyText: JSON object
 
 #  ArtifactStoreBucket:
@@ -137,7 +137,9 @@ Resources:
                   - !Sub arn:aws:s3:::${CodeBuildBucket}/*
               - Sid: CloudFormationAccess
                 Effect: Allow
-                Action: cloudformation:ValidateTemplate
+                Action:
+                  - cloudformation:ValidateTemplate
+                  - ecr:GetAuthorizationToken
                 Resource: "*"
               - Sid: EcrAccess
                 Effect: Allow
@@ -318,6 +320,10 @@ Resources:
                 StackName: !Sub ${AppName}-prod
                 TemplateConfiguration: !Sub TestOutput::${StackConfigProd}
                 TemplatePath: !Sub TestOutput::${TemplateFilePath}
+                ParameterOverrides: !Sub |
+                    {
+                        "EcrImageTag": { "Fn::GetParam" : [ "Build", "imagedefinitions.json", "tag" ] }
+                    }
         - Name: Approval
           Actions:
             - Name: approve-changeset
@@ -342,6 +348,7 @@ Resources:
                 ClusterName: !Sub ${EnvironmentName}-cluster
                 ServiceName: !Sub ${EnvironmentName}-${AppName}-service
                 FileName: imagedefinitions.json
+                RoleArn: !GetAtt CFnRole.Arn
               InputArtifacts:
                 - Name: BuildEcsOutput
         - Name: Deploy
