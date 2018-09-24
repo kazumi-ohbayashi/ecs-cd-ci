@@ -247,6 +247,10 @@ Resources:
                 Resource:
                   - !GetAtt CodeBuildProject.Arn
                   - !GetAtt CodeBuildProjectEcs.Arn
+              - Sid: EcsAccess
+                Effect: Allow
+                Action: ecs:*
+                Resource: "*"
   PipelineProd:
     Type: AWS::CodePipeline::Pipeline
     Properties:
@@ -348,7 +352,6 @@ Resources:
                 ClusterName: !Sub ${EnvironmentName}-cluster
                 ServiceName: !Sub ${EnvironmentName}-${AppName}-service
                 FileName: imagedefinitions.json
-                RoleArn: !GetAtt CFnRole.Arn
               InputArtifacts:
                 - Name: BuildEcsOutput
         - Name: Deploy
