@@ -1,5 +1,9 @@
 version: 0.2
- 
+
+env:
+  variables:
+    app_path: "app/with-smt-alm-sample"
+
 phases:
   pre_build:
     commands:
@@ -13,6 +17,7 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
+      - cd ${app_path}/src/
       - docker build -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
   post_build:

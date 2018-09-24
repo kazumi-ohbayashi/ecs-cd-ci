@@ -22,7 +22,6 @@ phases:
           --template-file ${app_path}/ecs_service_cfn.yaml \
           --s3-bucket $S3_BUCKET \
           --output-template-file .cfn/packaged.yml
-        ls -la .cfn/packaged.yml
 
 artifacts:
   files:
