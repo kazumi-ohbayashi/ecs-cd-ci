@@ -27,7 +27,8 @@ Parameters:
     Default: app/with-smt-alm-sample/params/param.dev.json
   StackConfigProd:
     Type: String
-    Default: app/with-smt-alm-sample/params/param.prod.json
+#    Default: app/with-smt-alm-sample/params/param.prod.json
+    Default: param.prod.json
   TemplateFilePath:
     Type: String
     Default: packaged.yml
