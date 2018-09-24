@@ -15,10 +15,15 @@ Parameters:
     Type: String
     Default: alarm-announce
 
-  ContainerImageAlarmAnnounce:
-    Description: Container Image
+  EcrImageTag:
+    Description: TODO
     Type: String
-    Default: 477493424245.dkr.ecr.ap-northeast-1.amazonaws.com/test-p0308-wwaa:latest
+    Default: latest
+
+#  ContainerImageAlarmAnnounce:
+#    Description: Container Image
+#    Type: String
+#    Default: 477493424245.dkr.ecr.ap-northeast-1.amazonaws.com/test-p0308-wwaa:latest
 #    Default: test-p0308:latest
 
   Region:
@@ -111,7 +116,7 @@ Resources:
         -
           Name: !Sub ${EnvironmentName}-container-80
 #          Image: !Ref ContainerImageAlarmAnnounce # TODO
-          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRName}:${ImageTag}"
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${AppName}:${EcrImageTag}"
           LogConfiguration:
             LogDriver: awslogs
             Options:
