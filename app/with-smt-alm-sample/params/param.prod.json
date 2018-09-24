@@ -1,5 +1,7 @@
 {
   "Parameters": {
-    "EnvironmentName": "with-w-alm"
+    "EnvironmentName": "with-w-alm",
+    "VpcId": "vpc-676e9a00",
+    "PrivateSubnets": [ "subnet-30038b79", "subnet-f438f9af" ]
   }
 }

@@ -10,6 +10,14 @@ Parameters:
       - "dev-with-w-alm"
       - "with-w-alm"
 
+  VpcId:
+    Description: VpcId
+    Type : AWS::EC2::VPC::Id
+
+  PrivateSubnets:
+    Description: Private Subnets for this conetents.
+    Type : List<AWS::EC2::Subnet::Id>
+
   AppName:
     Description: TODO
     Type: String
