@@ -27,7 +27,8 @@ phases:
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo Writing image definitions file...
-      - echo "[{\"name\":\"${IMAGE_NAME}\",\"tag\":\"${IMAGE_TAG}\",\"imageUri\":\"${REPOSITORY_URI}:${IMAGE_TAG}\"}]" > ${CODEBUILD_SRC_DIR}/imagedefinitions.json
+      - echo "[{\"name\":\"${ENVIRONMENT_NAME}-container-80\",\"tag\":\"${IMAGE_TAG}\",\"imageUri\":\"${REPOSITORY_URI}:${IMAGE_TAG}\"}]" > ${CODEBUILD_SRC_DIR}/imagedefinitions.json
+# TODO     - echo "[{\"name\":\"${IMAGE_NAME}\",\"tag\":\"${IMAGE_TAG}\",\"imageUri\":\"${REPOSITORY_URI}:${IMAGE_TAG}\"}]" > ${CODEBUILD_SRC_DIR}/imagedefinitions.json
 artifacts:
     files: imagedefinitions.json
     discard-paths: yes
