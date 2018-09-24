@@ -309,6 +309,7 @@ Resources:
           Actions:
             - InputArtifacts:
                 - Name: TestOutput
+                - Name: BuildEcsOutput
               Name: create-changeset
               ActionTypeId:
                 Category: Deploy
@@ -325,10 +326,10 @@ Resources:
                 StackName: !Sub ${AppName}-prod
                 TemplateConfiguration: !Sub TestOutput::${StackConfigProd}
                 TemplatePath: !Sub TestOutput::${TemplateFilePath}
-                ParameterOverrides: !Sub |
-                    {
-                        "EcrImageTag": { "Fn::GetParam" : [ "Build", "imagedefinitions.json", "tag" ] }
-                    }
+# TODO                ParameterOverrides: !Sub |
+#                    {
+#                        "EcrImageTag": { "Fn::GetParam" : [ "BuildEcsOutput", "imagedefinitions.json", "tag" ] }
+#                    }
         - Name: Approval
           Actions:
             - Name: approve-changeset
@@ -341,6 +342,19 @@ Resources:
                 NotificationArn: !Ref CodePipelineSNSTopic
                 ExternalEntityLink: !Sub https://console.aws.amazon.com/cloudformation/home?region=${AWS::Region}
                 CustomData: Please review changeset
+        - Name: Deploy
+          Actions:
+            - Name: execute-changeset
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: CloudFormation
+              Configuration:
+                StackName: !Sub ${AppName}-prod
+                ActionMode: CHANGE_SET_EXECUTE
+                ChangeSetName: changeset
+                RoleArn: !GetAtt CFnRole.Arn
         - Name: DeployEcs
           Actions:
             - Name: Deploy
@@ -355,16 +369,4 @@ Resources:
                 FileName: imagedefinitions.json
               InputArtifacts:
                 - Name: BuildEcsOutput
-        - Name: Deploy
-          Actions:
-            - Name: execute-changeset
-              ActionTypeId:
-                Category: Deploy
-                Owner: AWS
-                Version: 1
-                Provider: CloudFormation
-              Configuration:
-                StackName: !Sub ${AppName}-prod
-                ActionMode: CHANGE_SET_EXECUTE
-                ChangeSetName: changeset
-                RoleArn: !GetAtt CFnRole.Arn
+
