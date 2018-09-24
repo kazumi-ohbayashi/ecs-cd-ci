@@ -1,5 +1,5 @@
 {
   "Parameters": {
-    "Stage": "prod"
+    "EnvironmentName": "with-w-alm"
   }
 }
