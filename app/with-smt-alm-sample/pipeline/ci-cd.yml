@@ -325,7 +325,7 @@ Resources:
                 ChangeSetName: changeset
                 RoleArn: !GetAtt CFnRole.Arn
                 Capabilities: CAPABILITY_NAMED_IAM
-                StackName: !Sub ${AppName}-prod
+                StackName: !Sub ${AppName}
                 TemplateConfiguration: !Sub TestOutput::${StackConfigProd}
                 TemplatePath: !Sub TestOutput::${TemplateFilePath}
 # TODO                ParameterOverrides: !Sub |
@@ -353,7 +353,7 @@ Resources:
                 Version: 1
                 Provider: CloudFormation
               Configuration:
-                StackName: !Sub ${AppName}-prod
+                StackName: !Sub ${AppName}
                 ActionMode: CHANGE_SET_EXECUTE
                 ChangeSetName: changeset
                 RoleArn: !GetAtt CFnRole.Arn
